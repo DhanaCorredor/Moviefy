@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Build output (Vite)
+dist/
+.vite/
+
+# Local env (API keys, no se sube nunca)
+.env
+.env.local
+
+# Logs
+*.log
+pnpm-debug.log*
+
+# Notas internas del desarrollador
+DEVELOPMENT.md
