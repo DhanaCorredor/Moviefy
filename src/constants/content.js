@@ -1,8 +1,4 @@
 export const content = {
-  nav: {
-    login: 'INICIAR SESIÓN',
-    signup: 'SUSCRIBIRSE',
-  },
   welcome: {
     logoAlt: 'Logotipo de Moviefy',
     title: 'Moviefy',
@@ -14,6 +10,41 @@ export const content = {
   },
   exploration: {
     title: 'Exploración de películas',
-    placeholder: 'Esta vista mostrará el catálogo de películas (en construcción).',
+  },
+  underConstruction: {
+    title: 'En construcción',
+    message: 'Esta sección estará disponible próximamente.',
+  },
+  nav: {
+    ariaLabel: 'Navegación principal',
+    home: 'Inicio',
+    exploration: 'Explorar',
+    favorites: 'Favoritas',
+    profile: 'Perfil',
+    logoAlt: 'Logotipo de Moviefy',
+    brand: 'Moviefy',
+    searchAriaLabel: 'Buscar',
+    notificationsAriaLabel: 'Notificaciones',
+    profileMenuAriaLabel: 'Menú de perfil',
+  },
+  footer: {
+    ariaLabel: 'Pie de página',
+    copyright: '© 2026 Moviefy Platform',
+    tmdbAttribution:
+      'Este producto utiliza la API de TMDB, pero no está respaldado ni certificado por TMDB.',
+  },
+  states: {
+    loading: 'Cargando películas…',
+    emptyTitle: 'No hay películas',
+    emptyMessage: 'No encontramos resultados. Prueba con otra búsqueda u otro filtro.',
+    errorTitle: 'Algo salió mal',
+    errorMessage: 'No pudimos cargar las películas. Vuelve a intentarlo.',
+    retry: 'Reintentar',
+  },
+  movies: {
+    posterAlt: (title) => `Cartel de ${title}`,
+    noPoster: 'Sin cartel',
+    noYear: 'Año desconocido',
+    ratingAriaLabel: (rating) => `Puntuación ${rating} sobre 10`,
   },
 }
