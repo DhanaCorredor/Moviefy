@@ -15,3 +15,31 @@ pnpm-debug.log*
 
 # Notas internas del desarrollador
 DEVELOPMENT.md
+CLAUDE.md
+
+# Documentación interna (backlog, plan de trabajo, presentación, ficha)
+docs/
+
+# Editores / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Caches de herramientas
+.eslintcache
+coverage/
+.nyc_output/
+
+# Cualquier variable de entorno local extra
+.env.*.local
+
+# Backups y temporales
+*.bak
+*.tmp
+*~
