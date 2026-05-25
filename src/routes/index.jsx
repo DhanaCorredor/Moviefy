@@ -4,6 +4,7 @@ import WelcomePage from '../pages/WelcomePage/WelcomePage'
 import ExplorationPage from '../pages/ExplorationPage/ExplorationPage'
 import FavoritesPage from '../pages/FavoritesPage/FavoritesPage'
 import ProfilePage from '../pages/ProfilePage/ProfilePage'
+import AboutPage from '../pages/AboutPage/AboutPage'
 import { ROUTES } from '../constants/urls'
 
 function AppRoutes() {
@@ -14,6 +15,7 @@ function AppRoutes() {
         <Route path={ROUTES.EXPLORATION} element={<ExplorationPage />} />
         <Route path={ROUTES.FAVORITES} element={<FavoritesPage />} />
         <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+        <Route path={ROUTES.ABOUT} element={<AboutPage />} />
       </Route>
     </Routes>
   )

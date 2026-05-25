@@ -43,7 +43,6 @@ function WelcomePage() {
       <footer className="relative z-10 flex flex-col items-center gap-2 px-6 md:px-12 py-4 md:py-6 text-center">
         <p className="text-xs md:text-sm text-text/60">{content.welcome.disclaimer}</p>
         <p className="text-xs md:text-sm text-text/60">{content.welcome.footer}</p>
-        <p className="text-xs md:text-sm text-text/60">{content.footer.tmdbAttribution}</p>
       </footer>
     </div>
   )

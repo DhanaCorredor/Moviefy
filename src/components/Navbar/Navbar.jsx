@@ -70,6 +70,14 @@ function AvatarMenu() {
           >
             {content.nav.favorites}
           </NavLink>
+          <NavLink
+            to={ROUTES.ABOUT}
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className={menuItemClass}
+          >
+            {content.nav.about}
+          </NavLink>
         </div>
       )}
     </div>

@@ -10,6 +10,15 @@ export const content = {
   },
   exploration: {
     title: 'Exploración de películas',
+    moviesSectionTitle: 'Películas',
+  },
+  hero: {
+    carouselAriaLabel: 'Películas destacadas',
+    playCta: 'Reproducir',
+    moreInfoCta: 'Más información',
+    ratingAriaLabel: (rating) => `Puntuación ${rating} sobre 10`,
+    goToSlideAriaLabel: (n) => `Ir al slide ${n}`,
+    noBackdrop: 'Sin imagen',
   },
   underConstruction: {
     title: 'En construcción',
@@ -21,6 +30,7 @@ export const content = {
     exploration: 'Explorar',
     favorites: 'Favoritas',
     profile: 'Perfil',
+    about: 'Acerca de',
     logoAlt: 'Logotipo de Moviefy',
     brand: 'Moviefy',
     searchAriaLabel: 'Buscar',
@@ -30,8 +40,24 @@ export const content = {
   footer: {
     ariaLabel: 'Pie de página',
     copyright: '© 2026 Moviefy Platform',
+    tmdbCta: 'Información sobre TMDB y Moviefy',
+    socialAriaLabel: 'Redes sociales',
+    social: {
+      instagram: { url: '#', label: 'Instagram' },
+      twitter: { url: '#', label: 'X (antes Twitter)' },
+      youtube: { url: '#', label: 'YouTube' },
+      github: { url: '#', label: 'GitHub' },
+    },
+  },
+  about: {
+    title: 'Acerca de Moviefy',
+    intro:
+      'Moviefy es una aplicación para descubrir, explorar y guardar tus películas favoritas. Proyecto final individual del bootcamp FemCoders en Factoría F5.',
+    tmdbSectionTitle: 'Datos de películas',
     tmdbAttribution:
       'Este producto utiliza la API de TMDB, pero no está respaldado ni certificado por TMDB.',
+    tmdbVisitCta: 'Visitar TMDB',
+    tmdbUrl: 'https://www.themoviedb.org',
   },
   states: {
     loading: 'Cargando películas…',
@@ -40,6 +66,9 @@ export const content = {
     errorTitle: 'Algo salió mal',
     errorMessage: 'No pudimos cargar las películas. Vuelve a intentarlo.',
     retry: 'Reintentar',
+    loadingMore: 'Cargando más películas…',
+    loadMoreError: 'No pudimos cargar más resultados.',
+    endOfResults: 'Has llegado al final.',
   },
   movies: {
     posterAlt: (title) => `Cartel de ${title}`,
