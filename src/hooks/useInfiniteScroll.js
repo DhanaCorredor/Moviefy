@@ -1,9 +1,12 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 
 function useInfiniteScroll({ onLoadMore, enabled, rootMargin = '300px' }) {
   const sentinelRef = useRef(null)
   const callbackRef = useRef(onLoadMore)
-  callbackRef.current = onLoadMore
+
+  useLayoutEffect(() => {
+    callbackRef.current = onLoadMore
+  })
 
   useEffect(() => {
     if (!enabled) return

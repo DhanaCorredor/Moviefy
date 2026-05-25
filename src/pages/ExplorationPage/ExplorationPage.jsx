@@ -129,7 +129,7 @@ function ExplorationPage() {
           <HeroCarousel movies={heroMovies} genres={genres} />
 
           {gridMovies.length > 0 && (
-            <section className="flex flex-col gap-4 md:gap-6 px-4 md:px-8">
+            <section className="flex flex-col gap-4 md:gap-6 w-full max-w-screen-2xl mx-auto px-4 md:px-8">
               <h1 className="text-2xl md:text-4xl font-bold text-text">
                 {content.exploration.moviesSectionTitle}
               </h1>
