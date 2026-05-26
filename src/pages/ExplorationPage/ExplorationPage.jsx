@@ -1,7 +1,18 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { content } from '../../constants/content'
-import { getTrending, getGenres } from '../../services/tmdb'
+import {
+  discoverMovies,
+  getGenres,
+  getTrending,
+  searchMovies,
+} from '../../services/tmdb'
+import useDebounce from '../../hooks/useDebounce'
 import useInfiniteScroll from '../../hooks/useInfiniteScroll'
+import SearchBar from '../../components/movies/SearchBar/SearchBar'
+import FilterMenu, {
+  DEFAULT_FILTERS,
+  SORT_OPTIONS,
+} from '../../components/movies/FilterMenu/FilterMenu'
 import HeroCarousel from '../../components/movies/HeroCarousel/HeroCarousel'
 import HeroCarouselSkeleton from '../../components/movies/HeroCarouselSkeleton/HeroCarouselSkeleton'
 import MovieGrid from '../../components/movies/MovieGrid/MovieGrid'
@@ -12,7 +23,44 @@ import ErrorState from '../../components/ErrorState/ErrorState'
 
 const HERO_COUNT = 5
 
+function applyClientFilters(movies, { genreId, minRating }) {
+  return movies.filter((movie) => {
+    if (genreId && !movie.genreIds.includes(Number(genreId))) return false
+    if (minRating > 0 && (movie.rating ?? 0) < minRating) return false
+    return true
+  })
+}
+
+function fetchMoviesPage({ isSearching, activeQuery, filters, page }) {
+  if (isSearching) {
+    return searchMovies({ query: activeQuery, page })
+  }
+  if (filters.sortBy === SORT_OPTIONS.TRENDING && !filters.genreId && filters.minRating === 0) {
+    return getTrending({ page })
+  }
+  return discoverMovies({
+    page,
+    genreId: filters.genreId,
+    minRating: filters.minRating,
+    sortBy:
+      filters.sortBy === SORT_OPTIONS.TRENDING
+        ? 'popularity.desc'
+        : filters.sortBy,
+  })
+}
+
 function ExplorationPage() {
+  const [query, setQuery] = useState('')
+  const debouncedQuery = useDebounce(query, 400)
+  const activeQuery = debouncedQuery.trim()
+  const isSearching = activeQuery.length > 0
+
+  const [filters, setFilters] = useState(DEFAULT_FILTERS)
+  const hasActiveFilters =
+    filters.genreId !== DEFAULT_FILTERS.genreId ||
+    filters.minRating !== DEFAULT_FILTERS.minRating ||
+    filters.sortBy !== DEFAULT_FILTERS.sortBy
+
   const [movies, setMovies] = useState([])
   const [genres, setGenres] = useState([])
   const [page, setPage] = useState(1)
@@ -25,19 +73,36 @@ function ExplorationPage() {
 
   useEffect(() => {
     let cancelled = false
+    getGenres()
+      .then((list) => {
+        if (!cancelled) setGenres(list)
+      })
+      .catch(() => {
+        /* genres load failure is non-blocking */
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
 
     async function load() {
+      setLoading(true)
+      setError(null)
+      setLoadMoreError(null)
       try {
-        const [trending, genreList] = await Promise.all([
-          getTrending({ page: 1 }),
-          getGenres(),
-        ])
+        const result = await fetchMoviesPage({
+          isSearching,
+          activeQuery,
+          filters,
+          page: 1,
+        })
         if (cancelled) return
-        setMovies(trending.movies)
-        setPage(trending.page)
-        setTotalPages(trending.totalPages)
-        setGenres(genreList)
-        setError(null)
+        setMovies(result.movies)
+        setPage(result.page)
+        setTotalPages(result.totalPages)
       } catch (err) {
         if (cancelled) return
         setError(err)
@@ -51,14 +116,24 @@ function ExplorationPage() {
     return () => {
       cancelled = true
     }
-  }, [retryNonce])
+  }, [
+    activeQuery,
+    isSearching,
+    filters,
+    retryNonce,
+  ])
 
   const loadMore = useCallback(async () => {
     if (loading || loadingMore || page >= totalPages) return
     setLoadingMore(true)
     setLoadMoreError(null)
     try {
-      const next = await getTrending({ page: page + 1 })
+      const next = await fetchMoviesPage({
+        isSearching,
+        activeQuery,
+        filters,
+        page: page + 1,
+      })
       setMovies((prev) => [...prev, ...next.movies])
       setPage(next.page)
       setTotalPages(next.totalPages)
@@ -67,7 +142,15 @@ function ExplorationPage() {
     } finally {
       setLoadingMore(false)
     }
-  }, [loading, loadingMore, page, totalPages])
+  }, [
+    loading,
+    loadingMore,
+    page,
+    totalPages,
+    isSearching,
+    activeQuery,
+    filters,
+  ])
 
   const sentinelRef = useInfiniteScroll({
     onLoadMore: loadMore,
@@ -80,8 +163,6 @@ function ExplorationPage() {
   })
 
   const handleRetry = () => {
-    setLoading(true)
-    setError(null)
     setPage(1)
     setTotalPages(1)
     setRetryNonce((n) => n + 1)
@@ -92,8 +173,17 @@ function ExplorationPage() {
     loadMore()
   }
 
-  const heroMovies = movies.slice(0, HERO_COUNT)
-  const gridMovies = movies.slice(HERO_COUNT)
+  const handleClearFilters = () => setFilters(DEFAULT_FILTERS)
+
+  const visibleMovies = useMemo(() => {
+    if (!isSearching) return movies
+    return applyClientFilters(movies, filters)
+  }, [movies, isSearching, filters])
+
+  const showHero = !isSearching && !hasActiveFilters
+  const heroMovies = showHero ? visibleMovies.slice(0, HERO_COUNT) : []
+  const gridMovies = showHero ? visibleMovies.slice(HERO_COUNT) : visibleMovies
+
   const reachedEnd =
     !loading &&
     !error &&
@@ -101,11 +191,25 @@ function ExplorationPage() {
     page >= totalPages &&
     movies.length > 0
 
+  const sectionTitle = isSearching
+    ? content.exploration.searchResultsTitle(activeQuery)
+    : content.exploration.moviesSectionTitle
+
   return (
     <div className="flex flex-col gap-6 md:gap-10 pb-6 md:pb-10">
+      <div className="flex flex-col gap-4 md:gap-5 w-full max-w-screen-2xl mx-auto px-4 md:px-8 pt-4 md:pt-6">
+        <SearchBar value={query} onChange={setQuery} />
+        <FilterMenu
+          genres={genres}
+          filters={filters}
+          onChange={setFilters}
+          onClear={handleClearFilters}
+        />
+      </div>
+
       {loading && (
         <>
-          <HeroCarouselSkeleton />
+          {showHero && <HeroCarouselSkeleton />}
           <div className="px-4 md:px-8">
             <MovieGridSkeleton />
           </div>
@@ -118,20 +222,31 @@ function ExplorationPage() {
         </div>
       )}
 
-      {!loading && !error && movies.length === 0 && (
+      {!loading && !error && visibleMovies.length === 0 && (
         <div className="px-4 py-12 md:px-8">
-          <EmptyState />
+          <EmptyState
+            title={
+              isSearching ? content.states.emptySearchTitle : undefined
+            }
+            message={
+              isSearching
+                ? content.states.emptySearchMessage(activeQuery)
+                : undefined
+            }
+          />
         </div>
       )}
 
-      {!loading && !error && movies.length > 0 && (
+      {!loading && !error && visibleMovies.length > 0 && (
         <>
-          <HeroCarousel movies={heroMovies} genres={genres} />
+          {showHero && heroMovies.length > 0 && (
+            <HeroCarousel movies={heroMovies} genres={genres} />
+          )}
 
           {gridMovies.length > 0 && (
             <section className="flex flex-col gap-4 md:gap-6 w-full max-w-screen-2xl mx-auto px-4 md:px-8">
               <h1 className="text-2xl md:text-4xl font-bold text-text">
-                {content.exploration.moviesSectionTitle}
+                {sectionTitle}
               </h1>
               <MovieGrid movies={gridMovies} />
 
