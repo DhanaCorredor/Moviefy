@@ -1,18 +1,9 @@
 import { content } from '../../../constants/content'
-
-export const SORT_OPTIONS = {
-  TRENDING: 'trending',
-  TOP_RATED: 'vote_average.desc',
-  RECENT: 'primary_release_date.desc',
-}
-
-export const DEFAULT_FILTERS = {
-  genreId: '',
-  minRating: 0,
-  sortBy: SORT_OPTIONS.TRENDING,
-}
-
-const RATING_THRESHOLDS = [5, 6, 7, 8, 9]
+import {
+  DEFAULT_FILTERS,
+  RATING_THRESHOLDS,
+  SORT_OPTIONS,
+} from '../../../constants/filters'
 
 function FilterMenu({ genres, filters, onChange, onClear }) {
   const isDirty =

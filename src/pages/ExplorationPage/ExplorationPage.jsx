@@ -9,10 +9,8 @@ import {
 import useDebounce from '../../hooks/useDebounce'
 import useInfiniteScroll from '../../hooks/useInfiniteScroll'
 import SearchBar from '../../components/movies/SearchBar/SearchBar'
-import FilterMenu, {
-  DEFAULT_FILTERS,
-  SORT_OPTIONS,
-} from '../../components/movies/FilterMenu/FilterMenu'
+import FilterMenu from '../../components/movies/FilterMenu/FilterMenu'
+import { DEFAULT_FILTERS, SORT_OPTIONS } from '../../constants/filters'
 import HeroCarousel from '../../components/movies/HeroCarousel/HeroCarousel'
 import HeroCarouselSkeleton from '../../components/movies/HeroCarouselSkeleton/HeroCarouselSkeleton'
 import MovieGrid from '../../components/movies/MovieGrid/MovieGrid'
