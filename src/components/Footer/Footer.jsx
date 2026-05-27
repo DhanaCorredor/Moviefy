@@ -1,4 +1,4 @@
-import { Link, NavLink } from 'react-router-dom'
+import { NavLink } from 'react-router-dom'
 import { content } from '../../constants/content'
 import { ROUTES } from '../../constants/urls'
 import {
@@ -73,17 +73,19 @@ function Footer() {
           })}
         </ul>
 
-        <Link
-          to={ROUTES.ABOUT}
-          aria-label={content.footer.tmdbCta}
+        <a
+          href={content.footer.tmdbUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={content.footer.tmdbAriaLabel}
           className="inline-flex items-center transition hover:drop-shadow-[0_0_8px_rgba(93,44,213,0.6)] hover:scale-105"
         >
           <img
             src="/tmdb-logo.svg"
-            alt=""
+            alt={content.footer.tmdbLogoAlt}
             className="h-4 md:h-5 w-auto"
           />
-        </Link>
+        </a>
       </div>
     </footer>
   )

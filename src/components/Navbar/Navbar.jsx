@@ -1,96 +1,73 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import {
+  Link,
+  NavLink,
+  useLocation,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom'
 import logo from '../../assets/logo.png'
 import { content } from '../../constants/content'
 import { ROUTES } from '../../constants/urls'
-import { IconBell, IconSearch, IconUser } from '../icons/icons'
+import useDebounce from '../../hooks/useDebounce'
+import SearchBar from '../movies/SearchBar/SearchBar'
+import { IconBell, IconUser } from '../icons/icons'
 
-function AvatarMenu() {
-  const [open, setOpen] = useState(false)
-  const containerRef = useRef(null)
+const NAV_ITEMS = [
+  { to: ROUTES.WELCOME, label: content.nav.home, end: true },
+  { to: ROUTES.EXPLORATION, label: content.nav.exploration },
+  { to: ROUTES.FAVORITES, label: content.nav.favorites },
+  { to: ROUTES.PROFILE, label: content.nav.profile },
+]
+
+const navLinkClass = ({ isActive }) =>
+  `px-3 py-1.5 text-sm font-medium rounded-lg transition whitespace-nowrap ${
+    isActive
+      ? 'text-text bg-primary/15'
+      : 'text-text/70 hover:text-text hover:bg-text/5'
+  }`
+
+function NavbarSearch() {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const urlQuery = searchParams.get('q') ?? ''
+
+  const [query, setQuery] = useState(urlQuery)
+  const [prevUrlQuery, setPrevUrlQuery] = useState(urlQuery)
+  if (urlQuery !== prevUrlQuery) {
+    setPrevUrlQuery(urlQuery)
+    setQuery(urlQuery)
+  }
+
+  const debouncedQuery = useDebounce(query, 400)
 
   useEffect(() => {
-    if (!open) return
+    if (debouncedQuery === urlQuery) return
 
-    function handleClickOutside(event) {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
-        setOpen(false)
-      }
+    if (location.pathname !== ROUTES.EXPLORATION) {
+      const suffix = debouncedQuery
+        ? `?q=${encodeURIComponent(debouncedQuery)}`
+        : ''
+      navigate(`${ROUTES.EXPLORATION}${suffix}`)
+    } else {
+      setSearchParams(
+        debouncedQuery ? { q: debouncedQuery } : {},
+        { replace: true },
+      )
     }
+  }, [debouncedQuery, urlQuery, location.pathname, navigate, setSearchParams])
 
-    function handleEscape(event) {
-      if (event.key === 'Escape') setOpen(false)
-    }
-
-    document.addEventListener('mousedown', handleClickOutside)
-    document.addEventListener('keydown', handleEscape)
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-      document.removeEventListener('keydown', handleEscape)
-    }
-  }, [open])
-
-  const menuItemClass = ({ isActive }) =>
-    `block px-4 py-2 text-sm transition ${
-      isActive ? 'text-primary' : 'text-text hover:bg-primary/20'
-    }`
-
-  return (
-    <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        aria-label={content.nav.profileMenuAriaLabel}
-        aria-expanded={open}
-        aria-haspopup="menu"
-        onClick={() => setOpen((prev) => !prev)}
-        className="flex items-center justify-center h-9 w-9 rounded-full bg-surface text-text/80 hover:opacity-80 transition"
-      >
-        <IconUser className="h-5 w-5" />
-      </button>
-
-      {open && (
-        <div
-          role="menu"
-          className="absolute right-0 top-full mt-2 min-w-40 py-2 bg-surface rounded-lg shadow-lg shadow-black/40 z-30"
-        >
-          <NavLink
-            to={ROUTES.PROFILE}
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className={menuItemClass}
-          >
-            {content.nav.profile}
-          </NavLink>
-          <NavLink
-            to={ROUTES.FAVORITES}
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className={menuItemClass}
-          >
-            {content.nav.favorites}
-          </NavLink>
-          <NavLink
-            to={ROUTES.ABOUT}
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className={menuItemClass}
-          >
-            {content.nav.about}
-          </NavLink>
-        </div>
-      )}
-    </div>
-  )
+  return <SearchBar value={query} onChange={setQuery} />
 }
 
 function Navbar() {
   return (
-    <header className="sticky top-0 z-20 flex items-center justify-between gap-4 px-4 py-3 md:px-8 md:py-4 bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-20 flex items-center gap-3 md:gap-6 px-4 py-3 md:px-8 md:py-4 bg-background/95 backdrop-blur">
       <Link
         to={ROUTES.WELCOME}
         aria-label={content.nav.brand}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 shrink-0"
       >
         <img src={logo} alt={content.nav.logoAlt} className="h-8 md:h-9" />
         <span className="text-base md:text-lg font-bold text-text">
@@ -100,24 +77,38 @@ function Navbar() {
 
       <nav
         aria-label={content.nav.ariaLabel}
-        className="flex items-center gap-4 md:gap-5 text-text/80"
+        className="hidden md:flex items-center gap-1"
       >
-        <Link
-          to={ROUTES.EXPLORATION}
-          aria-label={content.nav.searchAriaLabel}
-          className="hover:text-text transition"
-        >
-          <IconSearch />
-        </Link>
+        {NAV_ITEMS.map(({ to, label, end }) => (
+          <NavLink key={to} to={to} end={end} className={navLinkClass}>
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="flex items-center gap-2 md:gap-3 shrink-0 ml-auto text-text/80">
+        <div className="w-40 md:w-64">
+          <NavbarSearch />
+        </div>
         <button
           type="button"
           aria-label={content.nav.notificationsAriaLabel}
-          className="hover:text-text transition"
+          className="hidden md:block hover:text-text transition"
         >
           <IconBell />
         </button>
-        <AvatarMenu />
-      </nav>
+        <NavLink
+          to={ROUTES.PROFILE}
+          aria-label={content.nav.profileMenuAriaLabel}
+          className={({ isActive }) =>
+            `flex items-center justify-center h-9 w-9 rounded-full bg-surface text-text/80 hover:opacity-80 transition ${
+              isActive ? 'ring-2 ring-primary' : ''
+            }`
+          }
+        >
+          <IconUser className="h-5 w-5" />
+        </NavLink>
+      </div>
     </header>
   )
 }

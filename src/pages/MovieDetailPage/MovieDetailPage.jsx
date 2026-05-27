@@ -1,12 +1,8 @@
-import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { content } from '../../constants/content'
-import {
-  ACTOR_DETAIL_PATH,
-  DIRECTOR_DETAIL_PATH,
-  ROUTES,
-} from '../../constants/urls'
+import { PERSON_DETAIL_PATH, ROUTES } from '../../constants/urls'
 import { getMovieDetail } from '../../services/tmdb'
+import useTmdbDetail from '../../hooks/useTmdbDetail'
 import Spinner from '../../components/Spinner/Spinner'
 import ErrorState from '../../components/ErrorState/ErrorState'
 
@@ -17,20 +13,20 @@ function MetaSeparator() {
 function CastCard({ person }) {
   return (
     <Link
-      to={ACTOR_DETAIL_PATH(person.id)}
+      to={PERSON_DETAIL_PATH(person.id)}
       className="group flex flex-col gap-2 w-28 md:w-36 shrink-0"
     >
       <div className="aspect-[2/3] rounded-lg overflow-hidden bg-surface transition-shadow group-hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
         {person.profileUrl ? (
           <img
             src={person.profileUrl}
-            alt={content.movieDetail.profileAlt(person.name)}
+            alt={content.persons.profileAlt(person.name)}
             loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full text-xs text-text/40">
-            {content.movieDetail.noProfile}
+            {content.persons.noProfile}
           </div>
         )}
       </div>
@@ -51,20 +47,20 @@ function CastCard({ person }) {
 function DirectorCard({ person }) {
   return (
     <Link
-      to={DIRECTOR_DETAIL_PATH(person.id)}
+      to={PERSON_DETAIL_PATH(person.id)}
       className="group flex items-center gap-3"
     >
       <div className="size-14 md:size-16 rounded-full overflow-hidden bg-surface shrink-0">
         {person.profileUrl ? (
           <img
             src={person.profileUrl}
-            alt={content.movieDetail.profileAlt(person.name)}
+            alt={content.persons.profileAlt(person.name)}
             loading="lazy"
             className="w-full h-full object-cover"
           />
         ) : (
           <div className="flex items-center justify-center w-full h-full text-[10px] text-text/40">
-            {content.movieDetail.noProfile}
+            {content.persons.noProfile}
           </div>
         )}
       </div>
@@ -78,44 +74,14 @@ function DirectorCard({ person }) {
 function MovieDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [movie, setMovie] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [notFound, setNotFound] = useState(false)
-  const [retryNonce, setRetryNonce] = useState(0)
+  const {
+    data: movie,
+    loading,
+    error,
+    notFound,
+    retry: handleRetry,
+  } = useTmdbDetail(getMovieDetail, id)
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function load() {
-      setLoading(true)
-      setError(null)
-      setNotFound(false)
-      try {
-        const data = await getMovieDetail(id)
-        if (cancelled) return
-        setMovie(data)
-      } catch (err) {
-        if (cancelled) return
-        if (err.status === 404) {
-          setNotFound(true)
-        } else {
-          setError(err)
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    load()
-    window.scrollTo({ top: 0 })
-
-    return () => {
-      cancelled = true
-    }
-  }, [id, retryNonce])
-
-  const handleRetry = () => setRetryNonce((n) => n + 1)
   const handleBack = () => navigate(-1)
 
   if (loading) {
@@ -154,11 +120,6 @@ function MovieDetailPage() {
   }
 
   if (!movie) return null
-
-  const directorTitle =
-    movie.directors.length > 1
-      ? content.movieDetail.directorTitlePlural
-      : content.movieDetail.directorTitle
 
   return (
     <article className="flex flex-col gap-8 md:gap-12 pb-10">
@@ -253,9 +214,27 @@ function MovieDetailPage() {
         </p>
       </section>
 
+      {movie.trailerKey && (
+        <section className="flex flex-col gap-4 w-full max-w-screen-2xl mx-auto px-4 md:px-8">
+          <h2 className="text-xl md:text-2xl font-bold text-text">
+            {content.movieDetail.trailerTitle}
+          </h2>
+          <div className="aspect-video w-full max-w-4xl rounded-lg overflow-hidden bg-surface shadow-2xl">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${movie.trailerKey}`}
+              title={content.movieDetail.trailerFrameTitle(movie.title)}
+              loading="lazy"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="h-full w-full border-0"
+            />
+          </div>
+        </section>
+      )}
+
       <section className="flex flex-col gap-4 w-full max-w-screen-2xl mx-auto px-4 md:px-8">
         <h2 className="text-xl md:text-2xl font-bold text-text">
-          {directorTitle}
+          {content.movieDetail.directorTitle}
         </h2>
         {movie.directors.length > 0 ? (
           <div className="flex flex-wrap gap-4 md:gap-6">

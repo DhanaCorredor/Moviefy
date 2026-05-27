@@ -12,27 +12,37 @@ function buildUrl(path, params = {}) {
   return url.toString()
 }
 
-function buildPosterUrl(posterPath) {
-  if (!posterPath) return null
-  return `${TMDB.IMAGE_BASE_URL}/${TMDB.POSTER_SIZE}${posterPath}`
+function buildImageUrl(path, size) {
+  if (!path) return null
+  return `${TMDB.IMAGE_BASE_URL}/${size}${path}`
 }
 
-function buildBackdropUrl(backdropPath) {
-  if (!backdropPath) return null
-  return `${TMDB.IMAGE_BASE_URL}/${TMDB.BACKDROP_SIZE}${backdropPath}`
-}
+async function tmdbFetch(path, params = {}, { notFoundResource } = {}) {
+  if (!API_KEY) {
+    throw new Error('VITE_TMDB_API_KEY no está definida en .env')
+  }
 
-function buildProfileUrl(profilePath) {
-  if (!profilePath) return null
-  return `${TMDB.IMAGE_BASE_URL}/${TMDB.PROFILE_SIZE}${profilePath}`
+  const response = await fetch(buildUrl(path, params))
+
+  if (notFoundResource && response.status === 404) {
+    const error = new Error(`TMDB ${notFoundResource} not found`)
+    error.status = 404
+    throw error
+  }
+
+  if (!response.ok) {
+    throw new Error(`TMDB error ${response.status}: ${response.statusText}`)
+  }
+
+  return response.json()
 }
 
 function normalizeMovie(raw) {
   return {
     id: raw.id,
     title: raw.title,
-    posterUrl: buildPosterUrl(raw.poster_path),
-    backdropUrl: buildBackdropUrl(raw.backdrop_path),
+    posterUrl: buildImageUrl(raw.poster_path, TMDB.POSTER_SIZE),
+    backdropUrl: buildImageUrl(raw.backdrop_path, TMDB.BACKDROP_SIZE),
     releaseYear: raw.release_date ? raw.release_date.slice(0, 4) : null,
     rating: typeof raw.vote_average === 'number'
       ? Number(raw.vote_average.toFixed(1))
@@ -42,25 +52,15 @@ function normalizeMovie(raw) {
   }
 }
 
-export async function getTrending({ timeWindow = 'day', page = 1 } = {}) {
-  if (!API_KEY) {
-    throw new Error('VITE_TMDB_API_KEY no está definida en .env')
-  }
-
-  const url = buildUrl(TMDB.ENDPOINTS.TRENDING_MOVIES(timeWindow), { page })
-  const response = await fetch(url)
-
-  if (!response.ok) {
-    throw new Error(`TMDB error ${response.status}: ${response.statusText}`)
-  }
-
-  const data = await response.json()
-
-  return {
-    page: data.page,
-    totalPages: data.total_pages ?? 1,
-    movies: data.results.map(normalizeMovie),
-  }
+function pickTrailerKey(rawVideos) {
+  const videos = rawVideos?.results ?? []
+  const trailer =
+    videos.find(
+      (v) => v.site === 'YouTube' && v.type === 'Trailer' && v.official,
+    ) ??
+    videos.find((v) => v.site === 'YouTube' && v.type === 'Trailer') ??
+    videos.find((v) => v.site === 'YouTube' && v.type === 'Teaser')
+  return trailer?.key ?? null
 }
 
 function normalizeMovieDetail(raw) {
@@ -72,7 +72,7 @@ function normalizeMovieDetail(raw) {
       id: c.id,
       name: c.name,
       character: c.character ?? '',
-      profileUrl: buildProfileUrl(c.profile_path),
+      profileUrl: buildImageUrl(c.profile_path, TMDB.PROFILE_SIZE),
     }))
 
   const directors = (raw.credits?.crew ?? [])
@@ -80,7 +80,7 @@ function normalizeMovieDetail(raw) {
     .map((c) => ({
       id: c.id,
       name: c.name,
-      profileUrl: buildProfileUrl(c.profile_path),
+      profileUrl: buildImageUrl(c.profile_path, TMDB.PROFILE_SIZE),
     }))
 
   return {
@@ -88,8 +88,8 @@ function normalizeMovieDetail(raw) {
     title: raw.title,
     tagline: raw.tagline ?? '',
     overview: raw.overview ?? '',
-    posterUrl: buildPosterUrl(raw.poster_path),
-    backdropUrl: buildBackdropUrl(raw.backdrop_path),
+    posterUrl: buildImageUrl(raw.poster_path, TMDB.POSTER_SIZE),
+    backdropUrl: buildImageUrl(raw.backdrop_path, TMDB.BACKDROP_SIZE),
     releaseYear: raw.release_date ? raw.release_date.slice(0, 4) : null,
     runtime: typeof raw.runtime === 'number' ? raw.runtime : null,
     rating:
@@ -101,96 +101,7 @@ function normalizeMovieDetail(raw) {
       : [],
     cast,
     directors,
-  }
-}
-
-export async function getMovieDetail(movieId) {
-  if (!API_KEY) {
-    throw new Error('VITE_TMDB_API_KEY no está definida en .env')
-  }
-
-  const url = buildUrl(TMDB.ENDPOINTS.MOVIE_DETAIL(movieId), {
-    append_to_response: 'credits',
-  })
-  const response = await fetch(url)
-
-  if (response.status === 404) {
-    const error = new Error(`TMDB movie ${movieId} not found`)
-    error.status = 404
-    throw error
-  }
-
-  if (!response.ok) {
-    throw new Error(`TMDB error ${response.status}: ${response.statusText}`)
-  }
-
-  const data = await response.json()
-  return normalizeMovieDetail(data)
-}
-
-export async function discoverMovies({
-  page = 1,
-  genreId,
-  minRating = 0,
-  sortBy = 'popularity.desc',
-} = {}) {
-  if (!API_KEY) {
-    throw new Error('VITE_TMDB_API_KEY no está definida en .env')
-  }
-
-  const params = {
-    page,
-    include_adult: false,
-    include_video: false,
-    sort_by: sortBy,
-  }
-  if (genreId) params.with_genres = genreId
-  if (minRating > 0) {
-    params['vote_average.gte'] = minRating
-    params['vote_count.gte'] = 200
-  }
-
-  const url = buildUrl(TMDB.ENDPOINTS.DISCOVER_MOVIES, params)
-  const response = await fetch(url)
-
-  if (!response.ok) {
-    throw new Error(`TMDB error ${response.status}: ${response.statusText}`)
-  }
-
-  const data = await response.json()
-  return {
-    page: data.page,
-    totalPages: data.total_pages ?? 1,
-    movies: data.results.map(normalizeMovie),
-  }
-}
-
-export async function searchMovies({ query, page = 1 } = {}) {
-  if (!API_KEY) {
-    throw new Error('VITE_TMDB_API_KEY no está definida en .env')
-  }
-
-  const trimmed = (query ?? '').trim()
-  if (!trimmed) {
-    return { page: 1, totalPages: 1, movies: [] }
-  }
-
-  const url = buildUrl(TMDB.ENDPOINTS.SEARCH_MOVIES, {
-    query: trimmed,
-    page,
-    include_adult: false,
-  })
-  const response = await fetch(url)
-
-  if (!response.ok) {
-    throw new Error(`TMDB error ${response.status}: ${response.statusText}`)
-  }
-
-  const data = await response.json()
-  return {
-    page: data.page,
-    totalPages: data.total_pages ?? 1,
-    movies: data.results.map(normalizeMovie),
+    trailerKey: pickTrailerKey(raw.videos),
   }
 }
 
@@ -237,48 +148,82 @@ function normalizePersonDetail(raw) {
     deathday: raw.deathday ?? null,
     placeOfBirth: raw.place_of_birth ?? '',
     knownForDepartment: raw.known_for_department ?? '',
-    profileUrl: buildProfileUrl(raw.profile_path),
+    profileUrl: buildImageUrl(raw.profile_path, TMDB.PROFILE_SIZE),
     actingCredits,
     directingCredits,
   }
 }
 
-export async function getPersonDetail(personId) {
-  if (!API_KEY) {
-    throw new Error('VITE_TMDB_API_KEY no está definida en .env')
+function toMoviesPage(data) {
+  return {
+    page: data.page,
+    totalPages: data.total_pages ?? 1,
+    movies: data.results.map(normalizeMovie),
   }
+}
 
-  const url = buildUrl(TMDB.ENDPOINTS.PERSON_DETAIL(personId), {
-    append_to_response: 'movie_credits',
+export async function getTrending({ timeWindow = 'day', page = 1 } = {}) {
+  const data = await tmdbFetch(TMDB.ENDPOINTS.TRENDING_MOVIES(timeWindow), {
+    page,
   })
-  const response = await fetch(url)
+  return toMoviesPage(data)
+}
 
-  if (response.status === 404) {
-    const error = new Error(`TMDB person ${personId} not found`)
-    error.status = 404
-    throw error
+export async function getMovieDetail(movieId) {
+  const data = await tmdbFetch(
+    TMDB.ENDPOINTS.MOVIE_DETAIL(movieId),
+    { append_to_response: 'credits,videos' },
+    { notFoundResource: `movie ${movieId}` },
+  )
+  return normalizeMovieDetail(data)
+}
+
+export async function discoverMovies({
+  page = 1,
+  genreId,
+  minRating = 0,
+  sortBy = 'popularity.desc',
+} = {}) {
+  const params = {
+    page,
+    include_adult: false,
+    include_video: false,
+    sort_by: sortBy,
+  }
+  if (genreId) params.with_genres = genreId
+  if (minRating > 0) {
+    params['vote_average.gte'] = minRating
+    params['vote_count.gte'] = 200
   }
 
-  if (!response.ok) {
-    throw new Error(`TMDB error ${response.status}: ${response.statusText}`)
+  const data = await tmdbFetch(TMDB.ENDPOINTS.DISCOVER_MOVIES, params)
+  return toMoviesPage(data)
+}
+
+export async function searchMovies({ query, page = 1 } = {}) {
+  const trimmed = (query ?? '').trim()
+  if (!trimmed) {
+    return { page: 1, totalPages: 1, movies: [] }
   }
 
-  const data = await response.json()
+  const data = await tmdbFetch(TMDB.ENDPOINTS.SEARCH_MOVIES, {
+    query: trimmed,
+    page,
+    include_adult: false,
+  })
+  return toMoviesPage(data)
+}
+
+export async function getPersonDetail(personId) {
+  const data = await tmdbFetch(
+    TMDB.ENDPOINTS.PERSON_DETAIL(personId),
+    { append_to_response: 'movie_credits' },
+    { notFoundResource: `person ${personId}` },
+  )
   return normalizePersonDetail(data)
 }
 
 export async function getGenres() {
-  if (!API_KEY) {
-    throw new Error('VITE_TMDB_API_KEY no está definida en .env')
-  }
-
-  const url = buildUrl(TMDB.ENDPOINTS.GENRES_MOVIE_LIST)
-  const response = await fetch(url)
-
-  if (!response.ok) {
-    throw new Error(`TMDB error ${response.status}: ${response.statusText}`)
-  }
-
-  const data = await response.json()
+  const data = await tmdbFetch(TMDB.ENDPOINTS.GENRES_MOVIE_LIST)
   return data.genres
 }

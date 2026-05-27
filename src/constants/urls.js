@@ -3,10 +3,8 @@ export const ROUTES = {
   EXPLORATION: '/exploration',
   FAVORITES: '/favorites',
   PROFILE: '/profile',
-  ABOUT: '/about',
   MOVIE_DETAIL: '/movies/:id',
-  ACTOR_DETAIL: '/actors/:id',
-  DIRECTOR_DETAIL: '/directors/:id',
+  PERSON_DETAIL: '/persons/:id',
 }
 
 export const TMDB = {
@@ -27,5 +25,4 @@ export const TMDB = {
 }
 
 export const MOVIE_DETAIL_PATH = (id) => `/movies/${id}`
-export const ACTOR_DETAIL_PATH = (id) => `/actors/${id}`
-export const DIRECTOR_DETAIL_PATH = (id) => `/directors/${id}`
+export const PERSON_DETAIL_PATH = (id) => `/persons/${id}`

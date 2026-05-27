@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { content } from '../../../constants/content'
 import HeroSlide from '../HeroSlide/HeroSlide'
+import TrailerModal from '../TrailerModal/TrailerModal'
 
 const AUTO_ROTATE_MS = 5000
 
 function HeroCarousel({ movies, genres = [] }) {
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
+  const [activeTrailer, setActiveTrailer] = useState(null)
 
   const genresById = useMemo(
     () => new Map(genres.map((g) => [g.id, g.name])),
@@ -14,21 +16,21 @@ function HeroCarousel({ movies, genres = [] }) {
   )
 
   useEffect(() => {
-    if (isPaused || movies.length <= 1) return
+    if (isPaused || activeTrailer || movies.length <= 1) return
 
     const intervalId = setInterval(() => {
       setCurrentIndex((i) => (i + 1) % movies.length)
     }, AUTO_ROTATE_MS)
 
     return () => clearInterval(intervalId)
-  }, [isPaused, movies.length])
+  }, [isPaused, activeTrailer, movies.length])
 
   if (movies.length === 0) return null
 
   return (
     <section
       aria-label={content.hero.carouselAriaLabel}
-      aria-roledescription="carrusel"
+      aria-roledescription={content.hero.carouselRoleDescription}
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       onFocus={() => setIsPaused(true)}
@@ -53,7 +55,13 @@ function HeroCarousel({ movies, genres = [] }) {
                   : 'opacity-0 z-0 pointer-events-none'
               }`}
             >
-              <HeroSlide movie={m} genreName={genreName} />
+              <HeroSlide
+                movie={m}
+                genreName={genreName}
+                onPlayTrailer={() =>
+                  setActiveTrailer({ id: m.id, title: m.title })
+                }
+              />
             </div>
           )
         })}
@@ -78,6 +86,15 @@ function HeroCarousel({ movies, genres = [] }) {
           )
         })}
       </div>
+
+      {activeTrailer && (
+        <TrailerModal
+          key={activeTrailer.id}
+          movieId={activeTrailer.id}
+          movieTitle={activeTrailer.title}
+          onClose={() => setActiveTrailer(null)}
+        />
+      )}
     </section>
   )
 }

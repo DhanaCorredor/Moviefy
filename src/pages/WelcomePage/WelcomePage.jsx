@@ -8,7 +8,8 @@ function WelcomePage() {
     <div className="relative flex flex-col min-h-screen overflow-hidden bg-background">
       <div
         aria-hidden="true"
-        className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1920')] bg-cover bg-center"
+        style={{ backgroundImage: `url(${content.welcome.heroImageUrl})` }}
+        className="absolute inset-0 bg-cover bg-center"
       />
       <div
         aria-hidden="true"
@@ -19,7 +20,7 @@ function WelcomePage() {
         <div className="flex flex-col items-center w-full max-w-md md:max-w-xl text-center">
           <img
             src={logo}
-            alt={content.welcome.logoAlt}
+            alt={content.nav.logoAlt}
             className="h-24 md:h-32 mb-6 md:mb-8"
           />
           <h1 className="mb-4 md:mb-6 text-3xl md:text-5xl font-bold text-text [text-shadow:_0_2px_8px_rgba(0,0,0,0.7)]">

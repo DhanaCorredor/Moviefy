@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { content } from '../../constants/content'
 import { ROUTES } from '../../constants/urls'
 import { getPersonDetail } from '../../services/tmdb'
+import useTmdbDetail from '../../hooks/useTmdbDetail'
 import MovieGrid from '../../components/movies/MovieGrid/MovieGrid'
 import Spinner from '../../components/Spinner/Spinner'
 import ErrorState from '../../components/ErrorState/ErrorState'
@@ -28,47 +28,17 @@ function InfoRow({ label, value }) {
   )
 }
 
-function PersonDetailPage({ role }) {
+function PersonDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [person, setPerson] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [notFound, setNotFound] = useState(false)
-  const [retryNonce, setRetryNonce] = useState(0)
+  const {
+    data: person,
+    loading,
+    error,
+    notFound,
+    retry: handleRetry,
+  } = useTmdbDetail(getPersonDetail, id)
 
-  useEffect(() => {
-    let cancelled = false
-
-    async function load() {
-      setLoading(true)
-      setError(null)
-      setNotFound(false)
-      try {
-        const data = await getPersonDetail(id)
-        if (cancelled) return
-        setPerson(data)
-      } catch (err) {
-        if (cancelled) return
-        if (err.status === 404) {
-          setNotFound(true)
-        } else {
-          setError(err)
-        }
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    }
-
-    load()
-    window.scrollTo({ top: 0 })
-
-    return () => {
-      cancelled = true
-    }
-  }, [id, retryNonce])
-
-  const handleRetry = () => setRetryNonce((n) => n + 1)
   const handleBack = () => navigate(-1)
 
   if (loading) {
@@ -108,31 +78,22 @@ function PersonDetailPage({ role }) {
 
   if (!person) return null
 
-  const roleLabel =
-    role === 'director'
-      ? content.personDetail.roleDirector
-      : content.personDetail.roleActor
+  const isDirector = person.knownForDepartment === 'Directing'
 
-  const primarySection =
-    role === 'director'
-      ? {
-          title: content.personDetail.directingFilmographyTitle,
-          credits: person.directingCredits,
-        }
-      : {
-          title: content.personDetail.actingFilmographyTitle,
-          credits: person.actingCredits,
-        }
-  const secondarySection =
-    role === 'director'
-      ? {
-          title: content.personDetail.actingFilmographyTitle,
-          credits: person.actingCredits,
-        }
-      : {
-          title: content.personDetail.directingFilmographyTitle,
-          credits: person.directingCredits,
-        }
+  const roleLabel = isDirector
+    ? content.personDetail.roleDirector
+    : content.personDetail.roleActor
+
+  const actingSection = {
+    title: content.personDetail.actingFilmographyTitle,
+    credits: person.actingCredits,
+  }
+  const directingSection = {
+    title: content.personDetail.directingFilmographyTitle,
+    credits: person.directingCredits,
+  }
+  const primarySection = isDirector ? directingSection : actingSection
+  const secondarySection = isDirector ? actingSection : directingSection
 
   return (
     <article className="flex flex-col gap-8 md:gap-12 px-4 py-6 md:px-8 md:py-10 w-full max-w-screen-2xl mx-auto">
@@ -149,12 +110,12 @@ function PersonDetailPage({ role }) {
           {person.profileUrl ? (
             <img
               src={person.profileUrl}
-              alt={content.personDetail.profileAlt(person.name)}
+              alt={content.persons.profileAlt(person.name)}
               className="w-full h-full object-cover"
             />
           ) : (
             <div className="flex items-center justify-center w-full h-full text-xs text-text/40">
-              {content.personDetail.noProfile}
+              {content.persons.noProfile}
             </div>
           )}
         </div>

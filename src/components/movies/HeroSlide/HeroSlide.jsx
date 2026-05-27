@@ -3,7 +3,7 @@ import { content } from '../../../constants/content'
 import { MOVIE_DETAIL_PATH } from '../../../constants/urls'
 import { IconPlay } from '../../icons/icons'
 
-function HeroSlide({ movie, genreName }) {
+function HeroSlide({ movie, genreName, onPlayTrailer }) {
   const { id, title, backdropUrl, rating, releaseYear, overview } = movie
 
   const metaParts = []
@@ -15,7 +15,7 @@ function HeroSlide({ movie, genreName }) {
       key: 'rating',
       node: (
         <span
-          aria-label={content.hero.ratingAriaLabel(rating)}
+          aria-label={content.movies.ratingAriaLabel(rating)}
           className="text-yellow-400"
         >
           ★ {rating}
@@ -69,13 +69,14 @@ function HeroSlide({ movie, genreName }) {
           </p>
         )}
         <div className="flex flex-wrap gap-3 mt-2">
-          <Link
-            to={MOVIE_DETAIL_PATH(id)}
+          <button
+            type="button"
+            onClick={onPlayTrailer}
             className="inline-flex items-center gap-2 px-6 md:px-8 py-2.5 md:py-3 bg-white text-background font-bold rounded-lg hover:bg-white/90 hover:scale-105 transition-all"
           >
             <IconPlay className="h-5 w-5 md:h-6 md:w-6" />
             {content.hero.playCta}
-          </Link>
+          </button>
           <Link
             to={MOVIE_DETAIL_PATH(id)}
             className="inline-flex items-center px-6 md:px-8 py-2.5 md:py-3 bg-text/25 hover:bg-text/35 text-text font-medium rounded-lg transition"

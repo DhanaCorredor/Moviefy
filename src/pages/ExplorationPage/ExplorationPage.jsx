@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { content } from '../../constants/content'
 import {
   discoverMovies,
@@ -6,9 +7,7 @@ import {
   getTrending,
   searchMovies,
 } from '../../services/tmdb'
-import useDebounce from '../../hooks/useDebounce'
 import useInfiniteScroll from '../../hooks/useInfiniteScroll'
-import SearchBar from '../../components/movies/SearchBar/SearchBar'
 import FilterMenu from '../../components/movies/FilterMenu/FilterMenu'
 import { DEFAULT_FILTERS, SORT_OPTIONS } from '../../constants/filters'
 import HeroCarousel from '../../components/movies/HeroCarousel/HeroCarousel'
@@ -48,9 +47,8 @@ function fetchMoviesPage({ isSearching, activeQuery, filters, page }) {
 }
 
 function ExplorationPage() {
-  const [query, setQuery] = useState('')
-  const debouncedQuery = useDebounce(query, 400)
-  const activeQuery = debouncedQuery.trim()
+  const [searchParams] = useSearchParams()
+  const activeQuery = (searchParams.get('q') ?? '').trim()
   const isSearching = activeQuery.length > 0
 
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
@@ -132,7 +130,11 @@ function ExplorationPage() {
         filters,
         page: page + 1,
       })
-      setMovies((prev) => [...prev, ...next.movies])
+      setMovies((prev) => {
+        const existingIds = new Set(prev.map((m) => m.id))
+        const fresh = next.movies.filter((m) => !existingIds.has(m.id))
+        return [...prev, ...fresh]
+      })
       setPage(next.page)
       setTotalPages(next.totalPages)
     } catch (err) {
@@ -195,87 +197,70 @@ function ExplorationPage() {
 
   return (
     <div className="flex flex-col gap-6 md:gap-10 pb-6 md:pb-10">
-      <div className="flex flex-col gap-4 md:gap-5 w-full max-w-screen-2xl mx-auto px-4 md:px-8 pt-4 md:pt-6">
-        <SearchBar value={query} onChange={setQuery} />
-        <FilterMenu
-          genres={genres}
-          filters={filters}
-          onChange={setFilters}
-          onClear={handleClearFilters}
-        />
-      </div>
-
-      {loading && (
-        <>
-          {showHero && <HeroCarouselSkeleton />}
-          <div className="px-4 md:px-8">
-            <MovieGridSkeleton />
-          </div>
-        </>
+      {showHero && loading && <HeroCarouselSkeleton />}
+      {showHero && !loading && !error && heroMovies.length > 0 && (
+        <HeroCarousel movies={heroMovies} genres={genres} />
       )}
 
-      {!loading && error && (
-        <div className="px-4 py-12 md:px-8">
-          <ErrorState onRetry={handleRetry} />
+      <section className="flex flex-col gap-4 md:gap-6 w-full max-w-screen-2xl mx-auto px-4 md:px-8">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-6">
+          <h1 className="text-2xl md:text-4xl font-bold text-text">
+            {sectionTitle}
+          </h1>
+          <FilterMenu
+            genres={genres}
+            filters={filters}
+            onChange={setFilters}
+            onClear={handleClearFilters}
+          />
         </div>
-      )}
 
-      {!loading && !error && visibleMovies.length === 0 && (
-        <div className="px-4 py-12 md:px-8">
+        {loading && <MovieGridSkeleton />}
+
+        {!loading && error && <ErrorState onRetry={handleRetry} />}
+
+        {!loading && !error && visibleMovies.length === 0 && (
           <EmptyState
-            title={
-              isSearching ? content.states.emptySearchTitle : undefined
-            }
+            title={isSearching ? content.states.emptySearchTitle : undefined}
             message={
               isSearching
                 ? content.states.emptySearchMessage(activeQuery)
                 : undefined
             }
           />
-        </div>
-      )}
+        )}
 
-      {!loading && !error && visibleMovies.length > 0 && (
-        <>
-          {showHero && heroMovies.length > 0 && (
-            <HeroCarousel movies={heroMovies} genres={genres} />
-          )}
+        {!loading && !error && gridMovies.length > 0 && (
+          <>
+            <MovieGrid movies={gridMovies} />
 
-          {gridMovies.length > 0 && (
-            <section className="flex flex-col gap-4 md:gap-6 w-full max-w-screen-2xl mx-auto px-4 md:px-8">
-              <h1 className="text-2xl md:text-4xl font-bold text-text">
-                {sectionTitle}
-              </h1>
-              <MovieGrid movies={gridMovies} />
+            <div ref={sentinelRef} aria-hidden="true" className="h-1" />
 
-              <div ref={sentinelRef} aria-hidden="true" className="h-1" />
+            {loadingMore && <Spinner />}
 
-              {loadingMore && <Spinner />}
-
-              {loadMoreError && (
-                <div className="flex flex-col items-center gap-3 py-4">
-                  <p className="text-sm text-text/70">
-                    {content.states.loadMoreError}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleRetryLoadMore}
-                    className="px-6 py-2.5 bg-primary text-text rounded-lg hover:opacity-90 transition"
-                  >
-                    {content.states.retry}
-                  </button>
-                </div>
-              )}
-
-              {reachedEnd && (
-                <p className="py-6 text-center text-sm text-text/60">
-                  {content.states.endOfResults}
+            {loadMoreError && (
+              <div className="flex flex-col items-center gap-3 py-4">
+                <p className="text-sm text-text/70">
+                  {content.states.loadMoreError}
                 </p>
-              )}
-            </section>
-          )}
-        </>
-      )}
+                <button
+                  type="button"
+                  onClick={handleRetryLoadMore}
+                  className="px-6 py-2.5 bg-primary text-text rounded-lg hover:opacity-90 transition"
+                >
+                  {content.states.retry}
+                </button>
+              </div>
+            )}
+
+            {reachedEnd && (
+              <p className="py-6 text-center text-sm text-text/60">
+                {content.states.endOfResults}
+              </p>
+            )}
+          </>
+        )}
+      </section>
     </div>
   )
 }

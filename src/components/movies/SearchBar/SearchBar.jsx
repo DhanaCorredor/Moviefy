@@ -5,12 +5,12 @@ function SearchBar({ value, onChange }) {
   const hasValue = value.length > 0
 
   return (
-    <div className="relative w-full max-w-2xl">
+    <div className="relative w-full">
       <span
         aria-hidden="true"
-        className="absolute left-3 top-1/2 -translate-y-1/2 text-text/50"
+        className="absolute left-2.5 top-1/2 -translate-y-1/2 text-text/50"
       >
-        <IconSearch className="h-5 w-5" />
+        <IconSearch className="h-4 w-4" />
       </span>
       <input
         type="search"
@@ -19,16 +19,16 @@ function SearchBar({ value, onChange }) {
         placeholder={content.search.placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="w-full pl-10 pr-10 py-2.5 bg-surface text-text placeholder:text-text/40 rounded-lg border border-transparent focus:border-primary focus:outline-none transition"
+        className="w-full pl-8 pr-8 py-1.5 text-sm bg-surface text-text placeholder:text-text/40 rounded-lg border border-transparent focus:border-primary focus:outline-none transition"
       />
       {hasValue && (
         <button
           type="button"
           onClick={() => onChange('')}
           aria-label={content.search.clearAriaLabel}
-          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-text/60 hover:text-text rounded-lg transition"
+          className="absolute right-1 top-1/2 -translate-y-1/2 p-1 text-text/60 hover:text-text rounded-lg transition"
         >
-          <IconClose className="h-4 w-4" />
+          <IconClose className="h-3.5 w-3.5" />
         </button>
       )}
     </div>

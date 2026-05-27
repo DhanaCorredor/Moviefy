@@ -1,12 +1,13 @@
 export const content = {
   welcome: {
-    logoAlt: 'Logotipo de Moviefy',
     title: 'Moviefy',
     headline: 'Empieza a disfrutar de las mejores películas y series en un solo lugar.',
     subtitle: 'Todo el entretenimiento que buscas, adaptado a ti.',
     cta: 'Explorar Películas',
     disclaimer: 'La disponibilidad de los títulos varía según el país. Mayor de 18 años.',
     footer: '© Moviefy Platform',
+    heroImageUrl:
+      'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?w=1920',
   },
   exploration: {
     title: 'Exploración de películas',
@@ -15,7 +16,7 @@ export const content = {
   },
   search: {
     ariaLabel: 'Buscar películas',
-    placeholder: 'Buscar películas por título…',
+    placeholder: 'Buscar películas…',
     clearAriaLabel: 'Limpiar búsqueda',
   },
   filters: {
@@ -33,15 +34,28 @@ export const content = {
   },
   hero: {
     carouselAriaLabel: 'Películas destacadas',
+    carouselRoleDescription: 'carrusel',
     playCta: 'Reproducir',
     moreInfoCta: 'Más información',
-    ratingAriaLabel: (rating) => `Puntuación ${rating} sobre 10`,
     goToSlideAriaLabel: (n) => `Ir al slide ${n}`,
     noBackdrop: 'Sin imagen',
+  },
+  trailerModal: {
+    loading: 'Cargando tráiler…',
+    noTrailerTitle: 'Sin tráiler disponible',
+    noTrailerMessage: 'No encontramos un tráiler para esta película.',
+    errorMessage: 'No pudimos cargar el tráiler.',
+    closeAriaLabel: 'Cerrar tráiler',
   },
   underConstruction: {
     title: 'En construcción',
     message: 'Esta sección estará disponible próximamente.',
+  },
+  notFound: {
+    title: 'Página no encontrada',
+    message: 'La página que buscas no existe o ha sido movida.',
+    ctaWelcome: 'Volver al inicio',
+    ctaExploration: 'Ir a explorar',
   },
   nav: {
     ariaLabel: 'Navegación principal',
@@ -49,17 +63,17 @@ export const content = {
     exploration: 'Explorar',
     favorites: 'Favoritas',
     profile: 'Perfil',
-    about: 'Acerca de',
     logoAlt: 'Logotipo de Moviefy',
     brand: 'Moviefy',
-    searchAriaLabel: 'Buscar',
     notificationsAriaLabel: 'Notificaciones',
     profileMenuAriaLabel: 'Menú de perfil',
   },
   footer: {
     ariaLabel: 'Pie de página',
     copyright: '© 2026 Moviefy Platform',
-    tmdbCta: 'Información sobre TMDB y Moviefy',
+    tmdbAriaLabel: 'Visitar TMDB',
+    tmdbUrl: 'https://www.themoviedb.org',
+    tmdbLogoAlt: 'The Movie Database',
     socialAriaLabel: 'Redes sociales',
     social: {
       instagram: { url: '#', label: 'Instagram' },
@@ -67,16 +81,6 @@ export const content = {
       youtube: { url: '#', label: 'YouTube' },
       github: { url: '#', label: 'GitHub' },
     },
-  },
-  about: {
-    title: 'Acerca de Moviefy',
-    intro:
-      'Moviefy es una aplicación para descubrir, explorar y guardar tus películas favoritas. Proyecto final individual del bootcamp FemCoders en Factoría F5.',
-    tmdbSectionTitle: 'Datos de películas',
-    tmdbAttribution:
-      'Este producto utiliza la API de TMDB, pero no está respaldado ni certificado por TMDB.',
-    tmdbVisitCta: 'Visitar TMDB',
-    tmdbUrl: 'https://www.themoviedb.org',
   },
   states: {
     loading: 'Cargando películas…',
@@ -98,6 +102,10 @@ export const content = {
     noYear: 'Año desconocido',
     ratingAriaLabel: (rating) => `Puntuación ${rating} sobre 10`,
   },
+  persons: {
+    profileAlt: (name) => `Foto de ${name}`,
+    noProfile: 'Sin foto',
+  },
   personDetail: {
     roleActor: 'Actor / Actriz',
     roleDirector: 'Director / Directora',
@@ -113,8 +121,6 @@ export const content = {
     notFoundTitle: 'Persona no encontrada',
     notFoundMessage: 'No encontramos a la persona que buscas.',
     notFoundCta: 'Volver a explorar',
-    profileAlt: (name) => `Foto de ${name}`,
-    noProfile: 'Sin foto',
   },
   movieDetail: {
     backCta: 'Volver',
@@ -124,10 +130,9 @@ export const content = {
     castTitle: 'Reparto',
     noCast: 'Sin información de reparto.',
     directorTitle: 'Dirección',
-    directorTitlePlural: 'Dirección',
     noDirector: 'Sin información de dirección.',
-    profileAlt: (name) => `Foto de ${name}`,
-    noProfile: 'Sin foto',
+    trailerTitle: 'Tráiler',
+    trailerFrameTitle: (title) => `Tráiler de ${title}`,
     notFoundTitle: 'Película no encontrada',
     notFoundMessage: 'No encontramos la película que buscas.',
     notFoundCta: 'Volver a explorar',
