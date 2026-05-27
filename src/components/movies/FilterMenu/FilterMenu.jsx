@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { content } from '../../../constants/content'
 import {
-  DEFAULT_FILTERS,
+  hasActiveFilters,
   RATING_THRESHOLDS,
   SORT_OPTIONS,
 } from '../../../constants/filters'
@@ -106,10 +106,7 @@ function FilterDropdown({ label, options, value, defaultValue, onChange }) {
 }
 
 function FilterMenu({ genres, filters, onChange, onClear }) {
-  const isDirty =
-    filters.genreId !== DEFAULT_FILTERS.genreId ||
-    filters.minRating !== DEFAULT_FILTERS.minRating ||
-    filters.sortBy !== DEFAULT_FILTERS.sortBy
+  const isDirty = hasActiveFilters(filters)
 
   const genreOptions = [
     { value: '', label: content.filters.genreAll },

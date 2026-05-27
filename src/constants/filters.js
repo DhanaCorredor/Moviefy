@@ -11,3 +11,11 @@ export const DEFAULT_FILTERS = {
 }
 
 export const RATING_THRESHOLDS = [5, 6, 7, 8, 9]
+
+export function hasActiveFilters(filters) {
+  return (
+    filters.genreId !== DEFAULT_FILTERS.genreId ||
+    filters.minRating !== DEFAULT_FILTERS.minRating ||
+    filters.sortBy !== DEFAULT_FILTERS.sortBy
+  )
+}
