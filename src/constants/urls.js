@@ -13,7 +13,9 @@ export const TMDB = {
   POSTER_SIZE: 'w500',
   BACKDROP_SIZE: 'w1280',
   PROFILE_SIZE: 'w185',
+  LOGO_SIZE: 'w92',
   LANGUAGE: 'es-ES',
+  WATCH_REGION: 'ES',
   ENDPOINTS: {
     TRENDING_MOVIES: (timeWindow) => `/trending/movie/${timeWindow}`,
     GENRES_MOVIE_LIST: '/genre/movie/list',

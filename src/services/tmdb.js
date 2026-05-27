@@ -52,6 +52,19 @@ function normalizeMovie(raw) {
   }
 }
 
+function pickWatchProviders(rawWatchProviders) {
+  const flatrate =
+    rawWatchProviders?.results?.[TMDB.WATCH_REGION]?.flatrate ?? []
+  return flatrate
+    .slice()
+    .sort((a, b) => a.display_priority - b.display_priority)
+    .map((p) => ({
+      id: p.provider_id,
+      name: p.provider_name,
+      logoUrl: buildImageUrl(p.logo_path, TMDB.LOGO_SIZE),
+    }))
+}
+
 function pickTrailerKey(rawVideos) {
   const videos = rawVideos?.results ?? []
   const trailer =
@@ -102,6 +115,7 @@ function normalizeMovieDetail(raw) {
     cast,
     directors,
     trailerKey: pickTrailerKey(raw.videos),
+    watchProviders: pickWatchProviders(raw['watch/providers']),
   }
 }
 
@@ -172,7 +186,7 @@ export async function getTrending({ timeWindow = 'day', page = 1 } = {}) {
 export async function getMovieDetail(movieId) {
   const data = await tmdbFetch(
     TMDB.ENDPOINTS.MOVIE_DETAIL(movieId),
-    { append_to_response: 'credits,videos' },
+    { append_to_response: 'credits,videos,watch/providers' },
     { notFoundResource: `movie ${movieId}` },
   )
   return normalizeMovieDetail(data)
