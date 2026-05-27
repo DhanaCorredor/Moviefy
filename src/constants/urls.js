@@ -28,3 +28,6 @@ export const TMDB = {
 
 export const MOVIE_DETAIL_PATH = (id) => `/movies/${id}`
 export const PERSON_DETAIL_PATH = (id) => `/persons/${id}`
+
+export const YOUTUBE_EMBED_URL = (key, { autoplay = false } = {}) =>
+  `https://www.youtube-nocookie.com/embed/${key}${autoplay ? '?autoplay=1' : ''}`

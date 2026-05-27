@@ -207,6 +207,7 @@ export async function discoverMovies({
   if (genreId) params.with_genres = genreId
   if (minRating > 0) {
     params['vote_average.gte'] = minRating
+    // Mínimo de votos para que el rating sea representativo y no entren pelis con 1-2 votos altos
     params['vote_count.gte'] = 200
   }
 

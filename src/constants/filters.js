@@ -2,6 +2,7 @@ export const SORT_OPTIONS = {
   TRENDING: 'trending',
   TOP_RATED: 'vote_average.desc',
   RECENT: 'primary_release_date.desc',
+  POPULARITY: 'popularity.desc',
 }
 
 export const DEFAULT_FILTERS = {

@@ -3,6 +3,7 @@
 > Single Page Application para descubrir, buscar y explorar películas, actores y directores. Consume datos reales de **The Movie Database (TMDB)**.
 
 🚀 **Demo:** [app-moviefy.vercel.app](https://app-moviefy.vercel.app)
+📚 **Wiki:** [deepwiki.com/DhanaCorredor/Moviefy](https://deepwiki.com/DhanaCorredor/Moviefy)
 
 Proyecto individual final del bootcamp **FemCoders · Factoría F5** · 2026.
 
