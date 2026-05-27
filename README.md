@@ -2,7 +2,7 @@
 
 > Single Page Application para descubrir, buscar y explorar películas, actores y directores. Consume datos reales de **The Movie Database (TMDB)**.
 
-🚀 **Demo:** [moviefy.vercel.app](https://moviefy.vercel.app)
+🚀 **Demo:** [app-moviefy.vercel.app](https://app-moviefy.vercel.app)
 
 Proyecto individual final del bootcamp **FemCoders · Factoría F5** · 2026.
 
@@ -10,11 +10,12 @@ Proyecto individual final del bootcamp **FemCoders · Factoría F5** · 2026.
 
 ## ✨ Funcionalidades
 
-- 🎞️ **Hero carrusel** en la pantalla de bienvenida con autorotación y crossfade.
-- 🔎 **Búsqueda en tiempo real** con debounce de 300 ms.
+- 🎞️ **Hero carrusel** en exploración con autorotación, crossfade y reproducción de tráiler en modal.
+- 🔎 **Búsqueda en tiempo real** con debounce de 400 ms.
 - 🎛️ **Filtros combinables** por género, puntuación mínima y tendencia.
 - ♾️ **Scroll infinito** con `IntersectionObserver`, sin duplicados y preservando la posición.
-- 📄 **Fichas detalladas** de películas, actores y directores con URLs únicas y navegación cruzada entre entidades relacionadas.
+- 📄 **Fichas detalladas** de películas y personas (actores y directores) con URLs únicas y navegación cruzada entre entidades relacionadas.
+- 📺 **Plataformas de streaming** en la ficha de película (datos de JustWatch vía TMDB, región España).
 - 🚦 **Estados de UX** diferenciados: carga, skeleton, vacío, error con reintento, fin de resultados.
 - 📱 **Mobile-first responsive** con 2 breakpoints (móvil por defecto, `md:` para desktop).
 
@@ -29,8 +30,9 @@ Proyecto individual final del bootcamp **FemCoders · Factoría F5** · 2026.
 | Routing | **React Router v7** |
 | Estilos | **Tailwind CSS v4** (plugin `@tailwindcss/vite`) |
 | HTTP | Fetch API nativa |
-| API externa | **TMDB** (`api.themoviedb.org/v3`) |
+| API externa | **TMDB** (`api.themoviedb.org/v3`) · datos de streaming vía **JustWatch** |
 | Persistencia | `localStorage` (próximo hito) |
+| Testing | **Vitest** · React Testing Library · jsdom |
 | Gestor | **pnpm** `10.13.1` |
 | Deploy | **Vercel** |
 
@@ -66,6 +68,8 @@ La app queda disponible en `http://localhost:5173`.
 | `pnpm build` | Build de producción a `dist/` |
 | `pnpm preview` | Previsualiza el build localmente |
 | `pnpm lint` | Análisis estático con ESLint |
+| `pnpm test` | Tests en modo watch con Vitest |
+| `pnpm test:run` | Ejecuta los tests una vez (CI) |
 
 ---
 
@@ -84,10 +88,14 @@ La app queda disponible en `http://localhost:5173`.
 ```
 src/
 ├── components/              # UI atómica y reutilizable
-│   ├── Navbar/  Footer/  Spinner/  EmptyState/  ErrorState/
+│   ├── Layout/  Navbar/  Footer/  icons/
+│   ├── Spinner/  EmptyState/  ErrorState/  UnderConstruction/
+│   ├── PersonImage/  DetailNotFound/
 │   └── movies/              # Componentes de dominio
-│       ├── HeroCarousel/    MovieCard/    MovieGrid/
-│       ├── SearchBar/       FilterMenu/   ...Skeleton/
+│       ├── HeroCarousel/    HeroCarouselSkeleton/    HeroSlide/
+│       ├── MovieCard/       MovieCardSkeleton/
+│       ├── MovieGrid/       MovieGridSkeleton/
+│       ├── SearchBar/       FilterMenu/              TrailerModal/
 ├── pages/                   # Vistas completas (una por ruta)
 │   ├── WelcomePage/         ExplorationPage/
 │   ├── MovieDetailPage/     PersonDetailPage/
@@ -95,24 +103,25 @@ src/
 ├── services/
 │   └── tmdb.js              # Único punto de consumo de la API
 ├── hooks/
-│   ├── useDebounce.js       useInfiniteScroll.js
+│   ├── useDebounce.js       useInfiniteScroll.js    useTmdbDetail.js
 ├── constants/               # Configuración centralizada
-│   ├── content.js           # Textos UI (Spanish)
-│   ├── filters.js           # Catálogos de filtros
+│   ├── content.js           # Textos UI (español)
+│   ├── filters.js           # Catálogos y helpers de filtros
 │   └── urls.js              # Rutas internas y endpoints TMDB
-└── routes/
-    └── index.jsx            # Definición central de rutas
+├── routes/
+│   └── index.jsx            # Definición central de rutas
+└── test/
+    └── setup.js             # Configuración global de Vitest
 ```
 
 ### Rutas de la app
 
 | Ruta | Página |
 |---|---|
-| `/` | Bienvenida con hero carrusel |
-| `/exploration` | Listado con búsqueda, filtros y scroll infinito |
+| `/` | Bienvenida con hero |
+| `/exploration` | Listado con hero carrusel, búsqueda, filtros y scroll infinito |
 | `/movies/:id` | Ficha detallada de película |
-| `/actors/:id` | Ficha detallada de actor/actriz |
-| `/directors/:id` | Ficha detallada de director/a |
+| `/persons/:id` | Ficha detallada de persona (actor/actriz/director/a) |
 | `/favorites` | Colección personal *(próximo hito)* |
 | `/profile` | Perfil *(próximo hito)* |
 | `*` | `NotFoundPage` |
@@ -122,10 +131,23 @@ src/
 ## 🏗️ Decisiones de arquitectura
 
 - **Servicio único de API** — Todo consumo de TMDB pasa por `services/tmdb.js`. Ningún `fetch()` directo en componentes. Esto permite cambiar de proveedor sin tocar la UI.
-- **Modelo interno consistente** — Las respuestas crudas de TMDB se transforman a un modelo propio (`poster_path` → `poster`, `vote_average` → `rating`, etc.). Los componentes nunca dependen del shape de la API externa.
+- **Modelo interno consistente** — Las respuestas crudas de TMDB se transforman a un modelo propio (`poster_path` → `posterUrl`, `vote_average` → `rating`, etc.) en `services/tmdb.js`. Los componentes nunca dependen del shape de la API externa.
 - **Textos centralizados** — Todas las cadenas UI viven en `src/constants/content.js`. Cambiar copy o idioma no requiere tocar componentes.
 - **Una carpeta por componente** — Estructura atómica clara, sin archivos `.css` locales. Todo el estilo se resuelve con utilidades de Tailwind.
 - **Design tokens en `@theme`** — Tailwind v4 sin `tailwind.config.js`. Los tokens (`--color-primary`, `--color-background`, etc.) viven en `src/index.css`.
+
+---
+
+## 🧪 Testing
+
+Tests unitarios con **Vitest** + **React Testing Library** sobre **jsdom**. Cada test se redacta partiendo de un escenario en formato Gherkin (`Given / When / Then`) tomado del briefing, y el escenario se documenta como comentario sobre el `it()` correspondiente.
+
+```bash
+pnpm test       # modo watch
+pnpm test:run   # ejecución única
+```
+
+Los archivos `*.test.jsx` viven junto al componente que prueban (p. ej. `MovieCard/MovieCard.test.jsx`).
 
 ---
 
