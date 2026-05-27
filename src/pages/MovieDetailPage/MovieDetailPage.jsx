@@ -1,10 +1,12 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { content } from '../../constants/content'
-import { PERSON_DETAIL_PATH, ROUTES } from '../../constants/urls'
+import { PERSON_DETAIL_PATH } from '../../constants/urls'
 import { getMovieDetail } from '../../services/tmdb'
 import useTmdbDetail from '../../hooks/useTmdbDetail'
 import Spinner from '../../components/Spinner/Spinner'
 import ErrorState from '../../components/ErrorState/ErrorState'
+import PersonImage from '../../components/PersonImage/PersonImage'
+import DetailNotFound from '../../components/DetailNotFound/DetailNotFound'
 
 function MetaSeparator() {
   return <span aria-hidden="true" className="text-text/30">·</span>
@@ -16,20 +18,11 @@ function CastCard({ person }) {
       to={PERSON_DETAIL_PATH(person.id)}
       className="group flex flex-col gap-2 w-28 md:w-36 shrink-0"
     >
-      <div className="aspect-[2/3] rounded-lg overflow-hidden bg-surface transition-shadow group-hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)]">
-        {person.profileUrl ? (
-          <img
-            src={person.profileUrl}
-            alt={content.persons.profileAlt(person.name)}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-          />
-        ) : (
-          <div className="flex items-center justify-center w-full h-full text-xs text-text/40">
-            {content.persons.noProfile}
-          </div>
-        )}
-      </div>
+      <PersonImage
+        person={person}
+        className="aspect-[2/3] rounded-lg overflow-hidden bg-surface transition-shadow group-hover:shadow-[0_8px_24px_rgba(0,0,0,0.5)]"
+        imgClassName="group-hover:scale-105 transition-transform duration-200"
+      />
       <div className="flex flex-col gap-0.5 px-0.5">
         <p className="text-xs md:text-sm font-semibold text-text line-clamp-2 group-hover:text-primary transition-colors">
           {person.name}
@@ -50,20 +43,11 @@ function DirectorCard({ person }) {
       to={PERSON_DETAIL_PATH(person.id)}
       className="group flex items-center gap-3"
     >
-      <div className="size-14 md:size-16 rounded-full overflow-hidden bg-surface shrink-0">
-        {person.profileUrl ? (
-          <img
-            src={person.profileUrl}
-            alt={content.persons.profileAlt(person.name)}
-            loading="lazy"
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <div className="flex items-center justify-center w-full h-full text-[10px] text-text/40">
-            {content.persons.noProfile}
-          </div>
-        )}
-      </div>
+      <PersonImage
+        person={person}
+        className="size-14 md:size-16 rounded-full overflow-hidden bg-surface shrink-0"
+        fallbackClassName="text-[10px]"
+      />
       <p className="text-sm md:text-base font-semibold text-text group-hover:text-primary transition-colors">
         {person.name}
       </p>
@@ -94,20 +78,11 @@ function MovieDetailPage() {
 
   if (notFound) {
     return (
-      <div className="flex flex-col items-center justify-center gap-4 px-4 py-20 md:px-8 text-center">
-        <h2 className="text-2xl md:text-3xl font-semibold text-text">
-          {content.movieDetail.notFoundTitle}
-        </h2>
-        <p className="text-sm md:text-base text-text/70">
-          {content.movieDetail.notFoundMessage}
-        </p>
-        <Link
-          to={ROUTES.EXPLORATION}
-          className="px-6 py-2.5 bg-primary text-text rounded-lg hover:opacity-90 transition"
-        >
-          {content.movieDetail.notFoundCta}
-        </Link>
-      </div>
+      <DetailNotFound
+        title={content.movieDetail.notFoundTitle}
+        message={content.movieDetail.notFoundMessage}
+        cta={content.movieDetail.notFoundCta}
+      />
     )
   }
 
