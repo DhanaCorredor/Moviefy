@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { content } from '../../../constants/content'
+import { YOUTUBE_EMBED_URL } from '../../../constants/urls'
 import { getMovieDetail } from '../../../services/tmdb'
 import { IconClose } from '../../icons/icons'
 
@@ -97,7 +98,7 @@ function TrailerModal({ movieId, movieTitle, onClose }) {
 
         {!state.loading && state.trailerKey && (
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${state.trailerKey}?autoplay=1`}
+            src={YOUTUBE_EMBED_URL(state.trailerKey, { autoplay: true })}
             title={content.movieDetail.trailerFrameTitle(movieTitle)}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen

@@ -45,7 +45,7 @@ function fetchMoviesPage({ isSearching, activeQuery, filters, page }) {
     minRating: filters.minRating,
     sortBy:
       filters.sortBy === SORT_OPTIONS.TRENDING
-        ? 'popularity.desc'
+        ? SORT_OPTIONS.POPULARITY
         : filters.sortBy,
   })
 }
