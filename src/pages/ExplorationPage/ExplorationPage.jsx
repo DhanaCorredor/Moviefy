@@ -9,7 +9,11 @@ import {
 } from '../../services/tmdb'
 import useInfiniteScroll from '../../hooks/useInfiniteScroll'
 import FilterMenu from '../../components/movies/FilterMenu/FilterMenu'
-import { DEFAULT_FILTERS, SORT_OPTIONS } from '../../constants/filters'
+import {
+  DEFAULT_FILTERS,
+  hasActiveFilters,
+  SORT_OPTIONS,
+} from '../../constants/filters'
 import HeroCarousel from '../../components/movies/HeroCarousel/HeroCarousel'
 import HeroCarouselSkeleton from '../../components/movies/HeroCarouselSkeleton/HeroCarouselSkeleton'
 import MovieGrid from '../../components/movies/MovieGrid/MovieGrid'
@@ -32,7 +36,7 @@ function fetchMoviesPage({ isSearching, activeQuery, filters, page }) {
   if (isSearching) {
     return searchMovies({ query: activeQuery, page })
   }
-  if (filters.sortBy === SORT_OPTIONS.TRENDING && !filters.genreId && filters.minRating === 0) {
+  if (!hasActiveFilters(filters)) {
     return getTrending({ page })
   }
   return discoverMovies({
@@ -52,10 +56,6 @@ function ExplorationPage() {
   const isSearching = activeQuery.length > 0
 
   const [filters, setFilters] = useState(DEFAULT_FILTERS)
-  const hasActiveFilters =
-    filters.genreId !== DEFAULT_FILTERS.genreId ||
-    filters.minRating !== DEFAULT_FILTERS.minRating ||
-    filters.sortBy !== DEFAULT_FILTERS.sortBy
 
   const [movies, setMovies] = useState([])
   const [genres, setGenres] = useState([])
@@ -180,7 +180,7 @@ function ExplorationPage() {
     return applyClientFilters(movies, filters)
   }, [movies, isSearching, filters])
 
-  const showHero = !isSearching && !hasActiveFilters
+  const showHero = !isSearching && !hasActiveFilters(filters)
   const heroMovies = showHero ? visibleMovies.slice(0, HERO_COUNT) : []
   const gridMovies = showHero ? visibleMovies.slice(HERO_COUNT) : visibleMovies
 
