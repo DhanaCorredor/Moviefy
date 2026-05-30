@@ -5,38 +5,45 @@ import logo from '../../assets/logo.png'
 
 function WelcomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <header className="flex justify-between items-center px-4 py-4">
-        <img src={logo} alt={content.welcome.logoAlt} className="h-8" />
-        <nav className="flex items-center gap-3">
-          <button type="button" className="text-xs font-semibold tracking-widest text-text">
-            {content.nav.login}
-          </button>
-          <button
-            type="button"
-            className="px-4 py-2 text-xs font-semibold tracking-widest bg-text text-background rounded-lg"
-          >
-            {content.nav.signup}
-          </button>
-        </nav>
-      </header>
+    <div className="relative flex flex-col min-h-screen overflow-hidden bg-background">
+      <div
+        aria-hidden="true"
+        style={{ backgroundImage: `url(${content.welcome.heroImageUrl})` }}
+        className="absolute inset-0 bg-cover bg-center"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background"
+      />
 
-      <main className="flex flex-col flex-grow items-center justify-center px-6 text-center">
-        <img src={logo} alt={content.welcome.logoAlt} className="h-24 mb-6" />
-        <h1 className="mb-4 text-3xl font-bold text-text">{content.welcome.title}</h1>
-        <p className="mb-2 text-lg font-semibold text-text">{content.welcome.headline}</p>
-        <p className="mb-8 text-sm text-text/70">{content.welcome.subtitle}</p>
-        <Link
-          to={ROUTES.EXPLORATION}
-          className="block w-full max-w-xs px-8 py-4 text-base font-semibold bg-primary text-text rounded-lg hover:opacity-90 transition"
-        >
-          {content.welcome.cta}
-        </Link>
+      <main className="relative z-10 flex flex-col flex-grow items-center justify-center px-6 md:px-12">
+        <div className="flex flex-col items-center w-full max-w-md md:max-w-xl text-center">
+          <img
+            src={logo}
+            alt={content.nav.logoAlt}
+            className="h-24 md:h-32 mb-6 md:mb-8"
+          />
+          <h1 className="mb-4 md:mb-6 text-3xl md:text-5xl font-bold text-text [text-shadow:_0_2px_8px_rgba(0,0,0,0.7)]">
+            {content.welcome.title}
+          </h1>
+          <p className="mb-2 md:mb-3 text-lg md:text-2xl font-semibold text-text [text-shadow:_0_2px_6px_rgba(0,0,0,0.7)]">
+            {content.welcome.headline}
+          </p>
+          <p className="mb-8 md:mb-10 text-sm md:text-base text-text/90 [text-shadow:_0_1px_4px_rgba(0,0,0,0.7)]">
+            {content.welcome.subtitle}
+          </p>
+          <Link
+            to={ROUTES.EXPLORATION}
+            className="block w-full max-w-xs md:max-w-sm px-8 md:px-12 py-4 md:py-5 text-base md:text-lg font-semibold bg-primary text-text rounded-lg shadow-lg shadow-primary/40 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-primary/60 active:scale-100"
+          >
+            {content.welcome.cta}
+          </Link>
+        </div>
       </main>
 
-      <footer className="flex flex-col items-center gap-2 px-6 py-4 text-center">
-        <p className="text-xs text-text/50">{content.welcome.disclaimer}</p>
-        <p className="text-xs text-text/50">{content.welcome.footer}</p>
+      <footer className="relative z-10 flex flex-col items-center gap-2 px-6 md:px-12 py-4 md:py-6 text-center">
+        <p className="text-xs md:text-sm text-text/60">{content.welcome.disclaimer}</p>
+        <p className="text-xs md:text-sm text-text/60">{content.welcome.footer}</p>
       </footer>
     </div>
   )
