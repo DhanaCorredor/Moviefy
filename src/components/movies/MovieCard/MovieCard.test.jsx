@@ -1,12 +1,19 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import MovieCard from './MovieCard'
+import FavoritesProvider from '../../../context/FavoritesProvider'
+
+beforeEach(() => {
+  localStorage.clear()
+})
 
 function renderCard(movie) {
   return render(
     <MemoryRouter>
-      <MovieCard movie={movie} />
+      <FavoritesProvider>
+        <MovieCard movie={movie} />
+      </FavoritesProvider>
     </MemoryRouter>
   )
 }
