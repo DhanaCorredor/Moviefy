@@ -141,4 +141,21 @@ export const content = {
     notFoundCta: 'Volver a explorar',
     backdropAlt: (title) => `Imagen de fondo de ${title}`,
   },
+  favorites: {
+    pageTitle: 'Mis favoritas',
+    countLabel: (n) => (n === 1 ? '1 película' : `${n} películas`),
+    emptyTitle: 'Aún no tienes favoritas',
+    emptyMessage:
+      'Marca películas con el corazón para guardarlas aquí y puntuarlas a tu gusto.',
+    emptyCta: 'Explorar películas',
+    addLabel: 'Añadir a favoritas',
+    addedLabel: 'En favoritas',
+    addAriaLabel: (title) => `Añadir ${title} a favoritas`,
+    removeAriaLabel: (title) => `Quitar ${title} de favoritas`,
+    removeCta: 'Quitar',
+    ratingLabel: 'Tu puntuación',
+    ratingValue: (n) => `${n}/10`,
+    noRating: 'Sin puntuar',
+    setRatingAriaLabel: (n) => `Puntuar con ${n} de 10`,
+  },
 }

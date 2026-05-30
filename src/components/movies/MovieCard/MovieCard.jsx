@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { content } from '../../../constants/content'
 import { MOVIE_DETAIL_PATH } from '../../../constants/urls'
+import FavoriteButton from '../FavoriteButton/FavoriteButton'
 
 function MovieCard({ movie }) {
   const { id, title, posterUrl, releaseYear, rating } = movie
@@ -10,7 +11,8 @@ function MovieCard({ movie }) {
       to={MOVIE_DETAIL_PATH(id)}
       className="group flex flex-col gap-2 transition-transform duration-200 ease-out hover:-translate-y-2"
     >
-      <div className="aspect-[2/3] rounded-lg overflow-hidden bg-surface shadow-md group-hover:shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_20px_rgba(255,255,255,0.15)] transition-shadow duration-200">
+      <div className="relative aspect-[2/3] rounded-lg overflow-hidden bg-surface shadow-md group-hover:shadow-[0_12px_40px_rgba(0,0,0,0.7),0_0_20px_rgba(255,255,255,0.15)] transition-shadow duration-200">
+        <FavoriteButton movie={movie} className="absolute top-2 right-2 z-10" />
         {posterUrl ? (
           <img
             src={posterUrl}

@@ -1,6 +1,13 @@
 import { content } from '../../../constants/content'
+import useFavorites from '../../../hooks/useFavorites'
+import FavoriteButton from '../FavoriteButton/FavoriteButton'
+import Rating from '../Rating/Rating'
 
 function MovieHeader({ movie, onBack }) {
+  const { favorites, isFavorite, setUserRating } = useFavorites()
+  const userRating =
+    favorites.find((favorite) => favorite.id === movie.id)?.userRating ?? null
+
   const metaParts = []
   if (movie.releaseYear) {
     metaParts.push({
@@ -105,6 +112,21 @@ function MovieHeader({ movie, onBack }) {
                 {movie.tagline}
               </p>
             )}
+
+            <div className="flex flex-col gap-3">
+              <FavoriteButton movie={movie} withLabel className="self-start" />
+              {isFavorite(movie.id) && (
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm text-text/70">
+                    {content.favorites.ratingLabel}
+                  </span>
+                  <Rating
+                    value={userRating}
+                    onChange={(value) => setUserRating(movie.id, value)}
+                  />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
